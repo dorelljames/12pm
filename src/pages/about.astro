@@ -1,0 +1,190 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout title="My Journey - 12 in 12">
+  <Navbar />
+
+  <main class="bg-slate-900 pt-24 pb-16">
+    <div class="relative">
+      <div class="absolute inset-0 bg-grid-slate-800/[0.1] bg-[size:40px_40px]">
+      </div>
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-slate-900/50 to-slate-900"
+      >
+      </div>
+
+      <article
+        class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 prose prose-invert prose-slate"
+      >
+        <div class="text-center mb-16 animate-fade-in">
+          <span class="text-primary-400 font-medium">Hey there! 👋</span>
+          <h1
+            class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl"
+          >
+            Why I'm Building 12 Products in 12 Months
+          </h1>
+          <p class="mt-4 text-lg text-slate-400">
+            A personal note from me, Dorell James
+          </p>
+        </div>
+
+        <div class="space-y-12 animate-slide-up">
+          <blockquote
+            class="border-l-4 border-primary-500 pl-4 italic text-lg text-slate-400"
+          >
+            "Everything around you that you call life was made up by people that
+            were no smarter than you. And you can change it, you can influence
+            it, you can build your own things that other people can use."
+            <footer class="text-sm text-slate-400 mt-2">— Steve Jobs</footer>
+          </blockquote>
+
+          <section>
+            <h2 class="text-gradient">The Vision</h2>
+            <p>
+              What started as a personal goal for 2025 quickly evolved into
+              something I believe could be transformative for others too.
+              Whether you're just starting out or you're a seasoned veteran,
+              there's a place for you in this journey.
+            </p>
+            <p>
+              Together, we'll push boundaries, create freely, and grow both
+              personally and professionally. This isn't just about building
+              products—it's about building ourselves.
+            </p>
+          </section>
+
+          <section>
+            <h2 class="text-gradient">My Personal Why</h2>
+            <div
+              class="bg-slate-800/50 rounded-xl p-6 backdrop-blur-sm border border-slate-700/50"
+            >
+              <h3 class="text-primary-400 font-semibold mb-4">
+                I will become a tiny, hyperfast product lab.
+              </h3>
+              <div class="space-y-6">
+                <div>
+                  <h4 class="font-semibold text-white">
+                    Ship every month to overcome fear of failure
+                  </h4>
+                  <p>
+                    Like many of you, I've been in tech for a while, yet I still
+                    feel like a beginner sometimes. I have countless projects
+                    that never saw the light of day. Shipping is better than
+                    perfect! This program is designed to help us collectively
+                    overcome the fear of failure.
+                  </p>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-white">
+                    Ship every month to increase probability of success
+                  </h4>
+                  <p>
+                    We often hear "idea is cheap, execution is key." Shipping
+                    monthly increases our chances of success by letting the
+                    market, not our doubts, decide what works. The only way to
+                    learn is to launch.
+                  </p>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-white">
+                    Shipping every month sounds fun!
+                  </h4>
+                  <p>
+                    Creating is fun! Seeing your creation used by others is even
+                    better. Unlike my full-time job where we systematically plan
+                    product launches, this is our playground for freedom and
+                    creativity.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="text-gradient">Rules for Myself</h2>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-primary-500/10 text-primary-400"
+                >
+                  1
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white">
+                    Launch a product each month
+                  </h3>
+                  <p>No excuses! Build, launch and, iterate.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-primary-500/10 text-primary-400"
+                >
+                  2
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white">
+                    Product has to be paid
+                  </h3>
+                  <p>
+                    This forces us to create real value. I know most of us shy
+                    away from making something people pay but I want you to when
+                    you can explore this as soonest.
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-primary-500/10 text-primary-400"
+                >
+                  3
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white">Marketing is key</h3>
+                  <p>
+                    Building is just the start—we need to get our products out
+                    there.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <hr />
+
+          <section class="text-center">
+            <h2 class="text-gradient">Ready to Join Me And Other Builders?</h2>
+            <p class="mb-8">
+              Let's build something amazing together. The journey starts now.
+            </p>
+            <a
+              href="/signup"
+              class="inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 transition-all"
+            >
+              Join the challenge today
+            </a>
+          </section>
+
+          <hr />
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .prose {
+    max-width: 65ch;
+  }
+  .prose h2 {
+    @apply text-2xl font-bold mb-4;
+  }
+  .prose p {
+    @apply text-slate-300 leading-relaxed mb-4;
+  }
+</style>

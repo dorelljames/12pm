@@ -5,9 +5,8 @@ const footerLinks = [
   {
     title: "Resources",
     links: [
-      { text: "Documentation", href: "#" },
-      { text: "Guide", href: "#" },
-      { text: "Blog", href: "#" },
+      { text: "About", href: "/about" },
+      { text: "Blog", href: "/blog" },
     ],
   },
   {
@@ -30,20 +29,20 @@ const footerLinks = [
 ---
 
 <footer class="bg-slate-900">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in">
+    <div class="py-16 grid grid-cols-1 md:grid-cols-3 gap-8 stagger-animations">
       {
-        footerLinks.map((section) => (
-          <div>
+        footerLinks.map((section, index) => (
+          <div class="animate-slide-up" style="--delay: {index * 0.1}s">
             <h3 class="text-sm font-semibold leading-6 text-white">
               {section.title}
             </h3>
-            <ul role="list" class="mt-6 space-y-4">
+            <ul role="list" class="mt-6 space-y-4 stagger-animations">
               {section.links.map((link) => (
-                <li>
+                <li class="animate-fade-in">
                   <a
                     href={link.href}
-                    class="text-sm leading-6 text-slate-300 hover:text-white transition-colors"
+                    class="text-sm leading-6 text-slate-300 hover:text-white transition-colors hover-lift inline-block"
                   >
                     {link.text}
                   </a>
@@ -59,13 +58,13 @@ const footerLinks = [
       <div class="flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-2">
           <div
-            class="h-8 w-8 rounded-full bg-gradient-to-r from-primary-600 to-accent-500"
+            class="h-8 w-8 rounded-full bg-gradient-to-r from-primary-600 to-accent-500 animate-glow"
           >
           </div>
           <p class="text-sm text-slate-400">
-            Built with ❤️ by <a
+            Built with <span class="animate-float inline-block">❤️</span> by <a
               href="https://dorelljames.com"
-              class="text-white hover:text-primary-400 transition-colors"
+              class="text-white hover:text-primary-400 transition-colors hover-lift inline-block"
               >Dorell James</a
             >
           </p>
@@ -77,15 +76,21 @@ const footerLinks = [
           <p>
             Inspired by <a
               href="https://levels.io/12-startups-12-months/"
-              class="text-white hover:text-primary-400 transition-colors"
-              >Pieter Levels' 12 startups in 12 months</a
+              class="text-white hover:text-primary-400 transition-colors hover-lift inline-block group"
             >
+              Pieter Levels' 12 startups in 12 months
+              <span
+                class="inline-block transition-transform group-hover:translate-x-1"
+                >→</span
+              >
+            </a>
           </p>
-          <div class="hidden md:block">•</div>
-          <p>© {currentYear} 12 in 12. All rights reserved.</p>
+          <div class="hidden md:block animate-pulse">•</div>
+          <p class="opacity-75">
+            © {currentYear} 12 in 12. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
   </div>
 </footer>
-

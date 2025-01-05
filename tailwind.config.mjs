@@ -9,6 +9,12 @@ export default {
         primary: colors.primary,
         accent: colors.accent,
       },
+      animation: {
+        "fade-in": "fadeIn 0.5s ease-out forwards",
+        "slide-up": "slideUp 0.5s ease-out forwards",
+        float: "float 3s ease-in-out infinite",
+        glow: "glow 3s ease-in-out infinite",
+      },
     },
   },
   plugins: [],
