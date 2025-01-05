@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "./animations.css";
+
+/* Additional custom styles */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-accent-500;
+}
+
+.bg-gradient-custom {
+  @apply bg-gradient-to-br from-primary-50 via-white to-accent-50;
+}

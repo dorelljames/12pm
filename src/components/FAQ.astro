@@ -1,0 +1,53 @@
+---
+const faqs = [
+  {
+    question: "Do I need to follow everything here?",
+    answer:
+      "Take it at your own pace. If you need time off, this is not a race. Your health and well-being come first.",
+  },
+  {
+    question: "What tools do I use?",
+    answer:
+      "You are free to use any tools, including AI and LLMs like ChatGPT for anything including the code, idea, or marketing!",
+  },
+  {
+    question: "Should I be spending money now?",
+    answer:
+      "This is up to your discretion but for bootstrapping a project, we would minimize our cost and keep everything as close to $0 especially when starting out.",
+  },
+  {
+    question: "I have zero knowledge on how to get started?",
+    answer:
+      "That's perfectly fine! We provide step-by-step guides and a supportive community to help you learn and grow.",
+  },
+];
+---
+
+<section id="faq" class="py-16 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="lg:text-center">
+      <h2
+        class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl"
+      >
+        Frequently Asked Questions
+      </h2>
+    </div>
+    <div class="mt-12">
+      <dl
+        class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-12"
+      >
+        {
+          faqs.map((faq) => (
+            <div>
+              <dt class="text-lg leading-6 font-medium text-gray-900">
+                {faq.question}
+              </dt>
+              <dd class="mt-2 text-base text-gray-500">{faq.answer}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>
+

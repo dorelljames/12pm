@@ -1,0 +1,64 @@
+---
+const features = [
+  {
+    title: "Ship Every Month",
+    description:
+      "Build momentum by launching one product every month. No more perfectionism, just shipping.",
+    icon: "🚀",
+  },
+  {
+    title: "Learn by Building",
+    description:
+      "Gain real-world experience in product development, marketing, and launching.",
+    icon: "🎯",
+  },
+  {
+    title: "Support Network",
+    description:
+      "Connect with fellow builders who understand the journey and share insights.",
+    icon: "🤝",
+  },
+];
+---
+
+<section class="relative py-20 sm:py-32 bg-white">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-2xl lg:text-center">
+      <h2 class="text-base font-semibold leading-7 text-primary-600">
+        Why Join?
+      </h2>
+      <p
+        class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+      >
+        Everything you need to start shipping
+      </p>
+      <p class="mt-6 text-lg leading-8 text-gray-600">
+        Stop overthinking and start building. Our program provides the
+        structure, accountability, and support you need to turn ideas into
+        reality.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
+      <dl
+        class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3"
+      >
+        {
+          features.map((feature) => (
+            <div class="flex flex-col">
+              <dt class="flex items-center gap-x-3 text-base font-semibold leading-7 text-gray-900">
+                <div class="h-12 w-12 flex items-center justify-center rounded-lg bg-primary-50">
+                  <span class="text-2xl">{feature.icon}</span>
+                </div>
+                {feature.title}
+              </dt>
+              <dd class="mt-4 flex flex-auto flex-col text-base leading-7 text-gray-600">
+                <p class="flex-auto">{feature.description}</p>
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>

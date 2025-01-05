@@ -1,0 +1,78 @@
+---
+const steps = [
+  {
+    number: "01",
+    title: "Choose Your Project",
+    description:
+      "Pick something you're excited to build. It could be a tool, service, or content product that solves a real problem.",
+    icon: "💡",
+  },
+  {
+    number: "02",
+    title: "30-Day Sprint",
+    description:
+      "Focus on core features and ship fast. Get your MVP out there and start collecting real user feedback.",
+    icon: "🏃‍♂️",
+  },
+  {
+    number: "03",
+    title: "Launch & Learn",
+    description:
+      "Share your work with the community, gather insights, and prepare for your next project with new knowledge.",
+    icon: "🚀",
+  },
+];
+---
+
+<section class="relative py-20 sm:py-32 overflow-hidden">
+  <div
+    class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300/10 to-transparent"
+  >
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-2xl lg:text-center">
+      <h2 class="text-base font-semibold leading-7 text-primary-600">
+        The Process
+      </h2>
+      <p
+        class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl"
+      >
+        How the challenge works
+      </p>
+      <p class="mt-6 text-lg leading-8 text-gray-600">
+        A simple but effective framework repeated each month to help you build
+        and launch consistently.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24">
+      <div class="space-y-16">
+        {
+          steps.map((step) => (
+            <div class="group relative flex flex-col lg:flex-row lg:items-center lg:gap-10">
+              <div class="flex h-12 w-12 items-center justify-center rounded-full border border-primary-600/10 bg-primary-50 group-hover:bg-primary-100 transition-colors">
+                <span class="text-2xl">{step.icon}</span>
+              </div>
+
+              <div class="mt-6 flex-auto lg:mt-0">
+                <div class="flex items-center">
+                  <span class="text-sm font-mono text-primary-600">
+                    {step.number}
+                  </span>
+                  <div class="ml-3 h-px flex-auto bg-gradient-to-r from-primary-600/50 to-transparent" />
+                </div>
+                <h3 class="mt-2 text-xl font-semibold text-gray-900">
+                  {step.title}
+                </h3>
+                <p class="mt-3 text-base leading-7 text-gray-600">
+                  {step.description}
+                </p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
