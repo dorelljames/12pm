@@ -100,16 +100,18 @@ import Footer from "../components/Footer.astro";
           <div class="flex items-center gap-4">
             <button
               type="submit"
+              id="submit-button"
               class="flex-1 rounded-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
             >
-              Count Me In! 🚀
+              <span>Count Me In! 🚀</span>
             </button>
           </div>
 
           <div id="form-status" class="text-center hidden">
-            <p class="text-emerald-400">
-              Thanks for joining! I'll be in touch soon. 🎉
-            </p>
+            <p class="text-emerald-400"></p>
+          </div>
+          <div id="form-error" class="text-center hidden">
+            <p class="text-red-400"></p>
           </div>
         </form>
 
@@ -137,9 +139,30 @@ import Footer from "../components/Footer.astro";
 <script>
   const form = document.getElementById("signup-form") as HTMLFormElement;
   const formStatus = document.getElementById("form-status") as HTMLDivElement;
+  const formError = document.getElementById("form-error") as HTMLDivElement;
+  const submitButton = document.getElementById(
+    "submit-button"
+  ) as HTMLButtonElement;
+  const submitText = submitButton.querySelector("span") as HTMLSpanElement;
+
+  const setLoading = (loading: boolean) => {
+    submitButton.disabled = loading;
+    submitText.textContent = loading ? "Submitting..." : "Count Me In! 🚀";
+  };
+
+  const showMessage = (message: string, error = false) => {
+    const element = error ? formError : formStatus;
+    element.querySelector("p")!.textContent = message;
+    element.classList.remove("hidden");
+    setTimeout(() => element.classList.add("hidden"), 5000);
+  };
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    formError.classList.add("hidden");
+    formStatus.classList.add("hidden");
+    setLoading(true);
+
     const formData = new FormData(form);
 
     try {
@@ -155,15 +178,19 @@ import Footer from "../components/Footer.astro";
         }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         form.reset();
-        formStatus.classList.remove("hidden");
-        setTimeout(() => {
-          formStatus.classList.add("hidden");
-        }, 5000);
+        showMessage(data.message);
+      } else {
+        showMessage(data.error, true);
       }
     } catch (error) {
       console.error("Error:", error);
+      showMessage("Something went wrong. Please try again.", true);
+    } finally {
+      setLoading(false);
     }
   });
 </script>
