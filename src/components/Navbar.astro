@@ -18,21 +18,30 @@
       </div>
 
       <div class="hidden md:flex md:items-center md:space-x-8">
-        <a
-          href="#how-it-works"
-          class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-          >How It Works</a
-        >
-        <a
-          href="#benefits"
-          class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-          >Benefits</a
-        >
-        <a
-          href="#faq"
-          class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-          >FAQ</a
-        >
+        {
+          Astro.url.pathname === "/" && (
+            <>
+              <a
+                href="/#how-it-works"
+                class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+              >
+                How It Works
+              </a>
+              <a
+                href="/#benefits"
+                class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+              >
+                Benefits
+              </a>
+              <a
+                href="/#faq"
+                class="text-sm font-medium text-slate-300 hover:text-white transition-colors"
+              >
+                FAQ
+              </a>
+            </>
+          )
+        }
         <a
           href="/signup"
           class="inline-flex items-center justify-center rounded-full px-4 py-1.5 text-sm font-semibold text-white transition-colors bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600"

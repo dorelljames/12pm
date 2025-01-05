@@ -2,6 +2,98 @@
 import Layout from "../layouts/Layout.astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
+import { Client } from "@notionhq/client";
+
+const notion = new Client({
+  auth: import.meta.env.PUBLIC_NOTION_TOKEN,
+});
+
+const DATABASE_ID = import.meta.env.PUBLIC_NOTION_DATABASE_ID;
+
+type FormState = {
+  success?: string;
+  error?: string;
+  errors?: {
+    name?: string;
+    email?: string;
+    reason?: string;
+  };
+  values?: {
+    name: string;
+    email: string;
+    reason: string;
+  };
+};
+
+let formState: FormState = {};
+
+// Handle form submission
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    const name = data.get("name")?.toString().trim();
+    const email = data.get("email")?.toString().trim();
+    const reason = data.get("reason")?.toString().trim();
+
+    // Store form values
+    formState.values = {
+      name: name ?? "",
+      email: email ?? "",
+      reason: reason ?? "",
+    };
+
+    // Validate fields
+    formState.errors = {};
+
+    if (!name) {
+      formState.errors.name = "Please tell us your name";
+    } else if (name.length < 2) {
+      formState.errors.name = "Name must be at least 2 characters";
+    }
+
+    if (!email) {
+      formState.errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      formState.errors.email = "Please enter a valid email address";
+    }
+
+    if (!reason) {
+      formState.errors.reason =
+        "Please share what excites you about the challenge";
+    } else if (reason.length < 10) {
+      formState.errors.reason =
+        "Please provide a bit more detail (at least 10 characters)";
+    }
+
+    // If there are any errors, don't proceed
+    if (Object.keys(formState.errors).length > 0) {
+      formState.error = "Please fix the errors below";
+      return;
+    } else {
+      await notion.pages.create({
+        parent: { database_id: DATABASE_ID },
+        properties: {
+          Name: {
+            title: [{ text: { content: name } }],
+          },
+          Email: {
+            email: email,
+          },
+          Reason: {
+            rich_text: [{ text: { content: reason } }],
+          },
+        },
+      });
+
+      formState.success = "Thanks for joining! I'll be in touch soon. 🎉";
+      // Clear form values on success
+      formState.values = undefined;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    formState.error = "Something went wrong. Please try again.";
+  }
+}
 ---
 
 <Layout title="Join the Challenge - 12 in 12">
@@ -32,7 +124,7 @@ import Footer from "../components/Footer.astro";
         </div>
 
         <form
-          id="signup-form"
+          method="POST"
           class="space-y-8 animate-slide-up bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50"
         >
           <div class="space-y-6">
@@ -49,9 +141,21 @@ import Footer from "../components/Footer.astro";
                   name="name"
                   id="name"
                   required
-                  class="block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-slate-600 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                  minlength="2"
+                  value={formState.values?.name}
+                  class:list={[
+                    "block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500",
+                    formState.errors?.name ? "ring-red-500" : "ring-slate-600",
+                  ]}
                   placeholder="Your name"
                 />
+                {
+                  formState.errors?.name && (
+                    <p class="mt-1 text-sm text-red-400">
+                      {formState.errors.name}
+                    </p>
+                  )
+                }
               </div>
             </div>
 
@@ -68,9 +172,20 @@ import Footer from "../components/Footer.astro";
                   name="email"
                   id="email"
                   required
-                  class="block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-slate-600 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                  value={formState.values?.email}
+                  class:list={[
+                    "block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500",
+                    formState.errors?.email ? "ring-red-500" : "ring-slate-600",
+                  ]}
                   placeholder="your@email.com"
                 />
+                {
+                  formState.errors?.email && (
+                    <p class="mt-1 text-sm text-red-400">
+                      {formState.errors.email}
+                    </p>
+                  )
+                }
               </div>
             </div>
 
@@ -87,8 +202,23 @@ import Footer from "../components/Footer.astro";
                   name="reason"
                   rows="4"
                   required
-                  class="block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset ring-slate-600 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500"
-                  placeholder="Share your thoughts..."></textarea>
+                  minlength="10"
+                  class:list={[
+                    "block w-full rounded-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500",
+                    formState.errors?.reason
+                      ? "ring-red-500"
+                      : "ring-slate-600",
+                  ]}
+                  placeholder="Share your thoughts..."
+                  >{formState.values?.reason}</textarea
+                >
+                {
+                  formState.errors?.reason && (
+                    <p class="mt-1 text-sm text-red-400">
+                      {formState.errors.reason}
+                    </p>
+                  )
+                }
               </div>
               <p class="mt-2 text-sm text-slate-400">
                 This helps me understand how I can better support you in your
@@ -100,19 +230,26 @@ import Footer from "../components/Footer.astro";
           <div class="flex items-center gap-4">
             <button
               type="submit"
-              id="submit-button"
               class="flex-1 rounded-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
             >
-              <span>Count Me In! 🚀</span>
+              Count Me In! 🚀
             </button>
           </div>
 
-          <div id="form-status" class="text-center hidden">
-            <p class="text-emerald-400"></p>
-          </div>
-          <div id="form-error" class="text-center hidden">
-            <p class="text-red-400"></p>
-          </div>
+          {
+            formState.success && (
+              <div class="text-center">
+                <p class="text-emerald-400">{formState.success}</p>
+              </div>
+            )
+          }
+          {
+            formState.error && (
+              <div class="text-center">
+                <p class="text-red-400">{formState.error}</p>
+              </div>
+            )
+          }
         </form>
 
         <div
@@ -135,62 +272,3 @@ import Footer from "../components/Footer.astro";
 
   <Footer />
 </Layout>
-
-<script>
-  const form = document.getElementById("signup-form") as HTMLFormElement;
-  const formStatus = document.getElementById("form-status") as HTMLDivElement;
-  const formError = document.getElementById("form-error") as HTMLDivElement;
-  const submitButton = document.getElementById(
-    "submit-button"
-  ) as HTMLButtonElement;
-  const submitText = submitButton.querySelector("span") as HTMLSpanElement;
-
-  const setLoading = (loading: boolean) => {
-    submitButton.disabled = loading;
-    submitText.textContent = loading ? "Submitting..." : "Count Me In! 🚀";
-  };
-
-  const showMessage = (message: string, error = false) => {
-    const element = error ? formError : formStatus;
-    element.querySelector("p")!.textContent = message;
-    element.classList.remove("hidden");
-    setTimeout(() => element.classList.add("hidden"), 5000);
-  };
-
-  form?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    formError.classList.add("hidden");
-    formStatus.classList.add("hidden");
-    setLoading(true);
-
-    const formData = new FormData(form);
-
-    try {
-      const response = await fetch("/api/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.get("name"),
-          email: formData.get("email"),
-          reason: formData.get("reason"),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        form.reset();
-        showMessage(data.message);
-      } else {
-        showMessage(data.error, true);
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      showMessage("Something went wrong. Please try again.", true);
-    } finally {
-      setLoading(false);
-    }
-  });
-</script>
