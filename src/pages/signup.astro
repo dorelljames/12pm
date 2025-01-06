@@ -85,13 +85,14 @@ if (Astro.request.method === "POST") {
         },
       });
 
-      formState.success = "Thanks for joining! I'll be in touch soon. 🎉";
+      formState.success =
+        "Thanks for joining! Check your inbox for the next steps. 🎉";
       // Clear form values on success
       formState.values = undefined;
     }
   } catch (error) {
     console.error("Error:", error);
-    formState.error = "Something went wrong. Please try again.";
+    formState.error = "Something went wrong. Please try again...";
   }
 }
 ---
@@ -121,6 +122,23 @@ if (Astro.request.method === "POST") {
             I'm excited to have you join this journey. Let's get to know each
             other a bit better.
           </p>
+        </div>
+
+        <div class="my-8">
+          {
+            formState.success && (
+              <div class="text-center font-bold">
+                <p class="text-emerald-400">{formState.success}</p>
+              </div>
+            )
+          }
+          {
+            formState.error && (
+              <div class="text-center font-semibold">
+                <p class="text-red-400">{formState.error}</p>
+              </div>
+            )
+          }
         </div>
 
         <form
@@ -235,21 +253,6 @@ if (Astro.request.method === "POST") {
               Count Me In! 🚀
             </button>
           </div>
-
-          {
-            formState.success && (
-              <div class="text-center">
-                <p class="text-emerald-400">{formState.success}</p>
-              </div>
-            )
-          }
-          {
-            formState.error && (
-              <div class="text-center">
-                <p class="text-red-400">{formState.error}</p>
-              </div>
-            )
-          }
         </form>
 
         <div
