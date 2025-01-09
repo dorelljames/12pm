@@ -1,0 +1,239 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { createClient } from "@supabase/supabase-js";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+
+// Get username from URL params
+const { username } = Astro.params;
+
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Fetch user profile
+const { data: profile, error: profileError } = await supabase
+  .from("profiles")
+  .select("*")
+  .eq("username", username)
+  .single();
+
+// Fetch products
+const { data: products, error: productsError } = await supabase
+  .from("products")
+  .select("*")
+  .eq("profile_id", profile?.id)
+  .order("created_at", { ascending: false });
+
+// Create array of 12 months with existing products or empty slots
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+type ProductStatus = "completed" | "in_progress" | "not_started";
+
+type Product = {
+  id?: string;
+  title?: string;
+  description?: string;
+  month?: string;
+  status?: ProductStatus;
+};
+
+const productGrid: Product[] = months.map((month, index) => {
+  const product = products?.find((p: any) => p.month === month) || {
+    month,
+    title: `Product ${index + 1}`,
+    description: "",
+    status: "not_started" as ProductStatus,
+  };
+  return product;
+});
+
+const getStatusConfig = (status: ProductStatus = "not_started") => {
+  const configs = {
+    completed: {
+      dotColor: "bg-emerald-500",
+      textColor: "text-emerald-600",
+      label: "Completed",
+    },
+    in_progress: {
+      dotColor: "bg-amber-500",
+      textColor: "text-amber-600",
+      label: "In Progress",
+    },
+    not_started: {
+      dotColor: "bg-gray-300",
+      textColor: "text-gray-400",
+      label: "Not Started",
+    },
+  };
+  return configs[status];
+};
+---
+
+<Layout title={`${username}'s 12 Products in 12 Months`}>
+  <Navbar />
+  <main class="container mx-auto px-4 py-16 mt-24">
+    <div class="text-center mb-16">
+      <h1 class="text-4xl font-bold text-gray-900 mb-4">
+        {username}'s 12 Products Challenge
+      </h1>
+      <p class="text-xl text-gray-600">
+        Building one product every month in 2024
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {
+        productGrid.map((product) => {
+          const status =
+            product.status || (product.id ? "completed" : "not_started");
+          const statusConfig = getStatusConfig(status);
+          const isActive = status !== "not_started";
+
+          return (
+            <div
+              class={`
+            group relative bg-white rounded-2xl overflow-hidden transition-all duration-300
+            ${isActive ? "hover:scale-[1.02] hover:-translate-y-1 shadow-sm hover:shadow-md" : "opacity-60 hover:opacity-80"}
+            border border-gray-100
+          `}
+            >
+              {/* Month Badge */}
+              <div
+                class={`
+              absolute top-4 right-4 px-2.5 py-1 rounded-full text-xs font-medium
+              ${isActive ? "bg-emerald-50 text-emerald-600" : "bg-gray-50 text-gray-500"}
+            `}
+              >
+                {product.month}
+              </div>
+
+              {/* Card Content */}
+              <div class="p-8">
+                {/* Product Status Indicator */}
+                <div class="flex items-center gap-2 mb-4">
+                  <div
+                    class={`w-2 h-2 rounded-full ${statusConfig.dotColor}`}
+                  />
+                  <span class={`text-xs ${statusConfig.textColor} font-medium`}>
+                    {statusConfig.label}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h2
+                  class={`
+                text-2xl font-semibold mb-3 transition-colors
+                ${
+                  isActive
+                    ? "text-gray-900 group-hover:text-emerald-600"
+                    : "text-gray-400 group-hover:text-gray-500"
+                }
+              `}
+                >
+                  {product.title}
+                </h2>
+
+                {/* Description */}
+                {product.description && (
+                  <p
+                    class={`
+                  text-sm leading-relaxed
+                  ${isActive ? "text-gray-600" : "text-gray-400"}
+                `}
+                  >
+                    {product.description}
+                  </p>
+                )}
+
+                {/* Call to Action */}
+                <div class="mt-6 pt-6 border-t border-gray-100">
+                  {status === "completed" && (
+                    <a
+                      href={`/products/${product.id}`}
+                      class="inline-flex items-center text-sm font-medium text-emerald-600 hover:text-emerald-700"
+                    >
+                      View Project
+                      <svg
+                        class="w-4 h-4 ml-1"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </a>
+                  )}
+                  {status === "in_progress" && (
+                    <span class="inline-flex items-center text-sm font-medium text-amber-600">
+                      <svg
+                        class="w-4 h-4 mr-1.5 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          class="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          stroke-width="4"
+                        />
+                        <path
+                          class="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Working on it
+                    </span>
+                  )}
+                  {status === "not_started" && (
+                    <span class="text-sm text-gray-400">Coming soon</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Decorative Elements */}
+              <div
+                class={`
+              absolute inset-0 bg-gradient-to-b opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none
+              ${
+                isActive
+                  ? "from-emerald-50/0 to-emerald-50/20"
+                  : "from-gray-50/0 to-gray-50/20"
+              }
+            `}
+              />
+            </div>
+          );
+        })
+      }
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .grid {
+    min-height: 50vh;
+  }
+</style>
