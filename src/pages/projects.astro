@@ -1,0 +1,358 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Get URL params for filtering
+const { searchParams } = Astro.url;
+const status = searchParams.get("status");
+const month = searchParams.get("month");
+
+// Get current month
+const currentMonth = new Date().toLocaleString("default", { month: "long" });
+
+// Build query
+let query = supabase
+  .from("products")
+  .select(
+    `
+    *,
+    profiles:profile_id (
+      username,
+      full_name,
+      avatar_url
+    )
+  `
+  )
+  .order("created_at", { ascending: false });
+
+// Apply filters
+if (status) {
+  query = query.eq("status", status);
+}
+if (month) {
+  query = query.eq("month", month);
+}
+
+// Fetch projects
+const { data: projects } = await query;
+
+// Get unique tech stacks for filtering
+const techStacks = [
+  ...new Set(projects?.flatMap((p) => p.tech_stack || [])),
+].sort();
+
+// Get months for filtering
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+// Get stats
+const stats = {
+  total: projects?.length || 0,
+  completed: projects?.filter((p) => p.status === "completed").length || 0,
+  inProgress: projects?.filter((p) => p.status === "in_progress").length || 0,
+  notStarted: projects?.filter((p) => p.status === "not_started").length || 0,
+};
+
+const getStatusConfig = (status: string = "not_started") => {
+  const configs = {
+    completed: {
+      dotColor: "bg-emerald-500",
+      textColor: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      label: "Completed",
+    },
+    in_progress: {
+      dotColor: "bg-amber-500",
+      textColor: "text-amber-600",
+      bgColor: "bg-amber-50",
+      label: "In Progress",
+    },
+    not_started: {
+      dotColor: "bg-gray-300",
+      textColor: "text-gray-400",
+      bgColor: "bg-gray-50",
+      label: "Not Started",
+    },
+  };
+  return configs[status as keyof typeof configs];
+};
+---
+
+<Layout title="All Projects - 12 in 12">
+  <Navbar />
+
+  <main class="min-h-screen bg-slate-50 pt-24 pb-16">
+    <div class="container mx-auto px-4">
+      {/* Header */}
+      <div class="max-w-3xl mx-auto text-center mb-16">
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">Builder Projects</h1>
+        <p class="text-lg text-slate-600">
+          Discover what our community is building, one month at a time
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div
+        class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12"
+      >
+        <div
+          class="bg-white rounded-xl p-4 text-center shadow-sm border border-slate-200"
+        >
+          <div class="text-3xl font-bold text-slate-900 mb-1">
+            {stats.total}
+          </div>
+          <div class="text-sm font-medium text-slate-600">Total Projects</div>
+        </div>
+        <div
+          class="bg-emerald-50 rounded-xl p-4 text-center shadow-sm border border-emerald-100"
+        >
+          <div class="text-3xl font-bold text-emerald-600 mb-1">
+            {stats.completed}
+          </div>
+          <div class="text-sm font-medium text-emerald-900">Completed</div>
+        </div>
+        <div
+          class="bg-amber-50 rounded-xl p-4 text-center shadow-sm border border-amber-100"
+        >
+          <div class="text-3xl font-bold text-amber-600 mb-1">
+            {stats.inProgress}
+          </div>
+          <div class="text-sm font-medium text-amber-900">In Progress</div>
+        </div>
+        <div
+          class="bg-slate-50 rounded-xl p-4 text-center shadow-sm border border-slate-200"
+        >
+          <div class="text-3xl font-bold text-slate-600 mb-1">
+            {stats.notStarted}
+          </div>
+          <div class="text-sm font-medium text-slate-900">Launching Soon</div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div
+        class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-12 max-w-7xl mx-auto"
+      >
+        <div class="flex flex-col md:flex-row gap-6">
+          {/* Status Filter */}
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Status</label
+            >
+            <select
+              class="w-full rounded-lg border-slate-300 text-slate-700 text-sm"
+              onchange="window.location.href = this.value"
+            >
+              <option value="/projects" selected={!status}>All Statuses</option>
+              <option
+                value="/projects?status=completed"
+                selected={status === "completed"}
+              >
+                Completed
+              </option>
+              <option
+                value="/projects?status=in_progress"
+                selected={status === "in_progress"}
+              >
+                In Progress
+              </option>
+              <option
+                value="/projects?status=not_started"
+                selected={status === "not_started"}
+              >
+                Not Started
+              </option>
+            </select>
+          </div>
+
+          {/* Month Filter */}
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-slate-700 mb-2"
+              >Month</label
+            >
+            <select
+              class="w-full rounded-lg border-slate-300 text-slate-700 text-sm"
+              onchange="window.location.href = this.value"
+            >
+              <option value="/projects" selected={!month}>All Months</option>
+              {
+                months.map((m) => (
+                  <option value={`/projects?month=${m}`} selected={month === m}>
+                    {m} {m === currentMonth ? "(Current)" : ""}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Projects Grid */}
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+      >
+        {
+          projects?.map((project) => (
+            <a
+              href={`/projects/${project.slug}`}
+              class="block bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-slate-200 overflow-hidden group"
+            >
+              {/* Project Thumbnail */}
+              <div class="relative h-48 bg-slate-100">
+                {project.thumbnail_url ? (
+                  <img
+                    src={project.thumbnail_url}
+                    alt={project.title}
+                    class="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div class="flex items-center justify-center h-full">
+                    <span class="text-slate-400">
+                      {project.status === "not_started"
+                        ? "🚀 Coming Soon"
+                        : "🏗️ Building"}
+                    </span>
+                  </div>
+                )}
+                <div class="absolute top-4 right-4">
+                  <span
+                    class={`px-3 py-1 rounded-full text-xs font-medium ${getStatusConfig(project.status).bgColor} ${getStatusConfig(project.status).textColor}`}
+                  >
+                    {getStatusConfig(project.status).label}
+                  </span>
+                </div>
+              </div>
+
+              <div class="p-6">
+                {/* Builder Info */}
+                <div class="flex items-center gap-3 mb-4">
+                  {project.profiles.avatar_url ? (
+                    <img
+                      src={project.profiles.avatar_url}
+                      alt={project.profiles.username}
+                      class="w-10 h-10 rounded-full"
+                    />
+                  ) : (
+                    <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                      <span class="text-slate-500 text-sm">
+                        {project.profiles.username?.[0]?.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <h4 class="text-sm font-medium text-slate-900">
+                      {project.profiles.full_name || project.profiles.username}
+                    </h4>
+                    <div class="text-xs text-slate-500 hover:text-primary-600">
+                      @{project.profiles.username}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project Info */}
+                <h3 class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors">
+                  {project.title}
+                </h3>
+                {project.description && (
+                  <p class="text-slate-600 text-sm mb-4 line-clamp-2">
+                    {project.description}
+                  </p>
+                )}
+
+                {/* Tech Stack */}
+                {project.tech_stack && (
+                  <div class="flex flex-wrap gap-2 mb-4">
+                    {project.tech_stack.map((tech: string) => (
+                      <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Links - Only show for completed projects */}
+                {project.status === "completed" && (
+                  <div class="flex gap-3 mt-4 pt-4 border-t border-slate-100">
+                    {project.github_url && (
+                      <div class="inline-flex items-center text-sm text-slate-500 hover:text-slate-700">
+                        <svg
+                          class="w-4 h-4 mr-1"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                        </svg>
+                        Code
+                      </div>
+                    )}
+                    {project.demo_url && (
+                      <div class="inline-flex items-center text-sm text-slate-500 hover:text-slate-700">
+                        <svg
+                          class="w-4 h-4 mr-1"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                        Demo
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </a>
+          ))
+        }
+      </div>
+
+      {/* Empty State */}
+      {
+        (!projects || projects.length === 0) && (
+          <div class="text-center py-12">
+            <div class="text-slate-400 mb-4">🔍</div>
+            <h3 class="text-lg font-medium text-slate-900 mb-2">
+              No Projects Found
+            </h3>
+            <p class="text-slate-600">
+              Try adjusting your filters to find what you're looking for
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

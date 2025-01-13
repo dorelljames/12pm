@@ -1,0 +1,360 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+import Footer from "../../components/Footer.astro";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Get project slug from URL params
+const { slug } = Astro.params;
+
+// Fetch project details
+const { data: project } = await supabase
+  .from("products")
+  .select(
+    `
+    *,
+    profiles:profile_id (
+      username,
+      full_name,
+      avatar_url,
+      bio
+    ),
+    product_updates (
+      *
+    )
+  `
+  )
+  .eq("slug", slug)
+  .single();
+
+// If project not found, redirect to 404
+if (!project) {
+  return Astro.redirect("/404");
+}
+
+// Get status config
+const getStatusConfig = (status: string = "not_started") => {
+  const configs = {
+    completed: {
+      dotColor: "bg-emerald-500",
+      textColor: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      label: "Completed",
+    },
+    in_progress: {
+      dotColor: "bg-amber-500",
+      textColor: "text-amber-600",
+      bgColor: "bg-amber-50",
+      label: "In Progress",
+    },
+    not_started: {
+      dotColor: "bg-gray-300",
+      textColor: "text-gray-400",
+      bgColor: "bg-gray-50",
+      label: "Not Started",
+    },
+  };
+  return configs[status as keyof typeof configs];
+};
+
+// Format date
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+---
+
+<Layout title={`${project.title} - 12 in 12`}>
+  <Navbar />
+
+  <main class="min-h-screen bg-slate-50 pt-24 pb-16">
+    <div class="container mx-auto px-4">
+      {/* Back Link */}
+      <div class="max-w-4xl mx-auto mb-8">
+        <a
+          href="/projects"
+          class="inline-flex items-center text-sm text-slate-600 hover:text-primary-600"
+        >
+          <svg class="w-4 h-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"></path>
+          </svg>
+          Back to Projects
+        </a>
+      </div>
+
+      {/* Project Header */}
+      <div
+        class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8"
+      >
+        {/* Project Thumbnail */}
+        <div class="relative h-64 bg-slate-100">
+          {
+            project.thumbnail_url ? (
+              <img
+                src={project.thumbnail_url}
+                alt={project.title}
+                class="w-full h-full object-cover"
+              />
+            ) : (
+              <div class="flex items-center justify-center h-full">
+                <span class="text-slate-400">
+                  {project.status === "not_started"
+                    ? "🚀 Coming Soon"
+                    : "🏗️ Building"}
+                </span>
+              </div>
+            )
+          }
+          <div class="absolute top-4 right-4">
+            <span
+              class={`px-3 py-1 rounded-full text-xs font-medium ${
+                getStatusConfig(project.status).bgColor
+              } ${getStatusConfig(project.status).textColor}`}
+            >
+              {getStatusConfig(project.status).label}
+            </span>
+          </div>
+        </div>
+
+        <div class="p-8">
+          {/* Builder Info */}
+          <div class="flex items-center gap-4 mb-6">
+            {
+              project.profiles.avatar_url ? (
+                <img
+                  src={project.profiles.avatar_url}
+                  alt={project.profiles.username}
+                  class="w-12 h-12 rounded-full"
+                />
+              ) : (
+                <div class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                  <span class="text-slate-500 text-lg">
+                    {project.profiles.username?.[0]?.toUpperCase()}
+                  </span>
+                </div>
+              )
+            }
+            <div>
+              <h4 class="text-base font-medium text-slate-900">
+                {project.profiles.full_name || project.profiles.username}
+              </h4>
+              <a
+                href={`/${project.profiles.username}`}
+                class="text-sm text-slate-500 hover:text-primary-600"
+              >
+                @{project.profiles.username}
+              </a>
+            </div>
+          </div>
+
+          {/* Project Info */}
+          <h1 class="text-3xl font-bold text-slate-900 mb-4">
+            {project.title}
+          </h1>
+          {
+            project.description && (
+              <p class="text-slate-600 mb-6 whitespace-pre-wrap">
+                {project.description}
+              </p>
+            )
+          }
+
+          {/* Project Meta */}
+          <div
+            class="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 border-y border-slate-100"
+          >
+            <div>
+              <div class="text-sm font-medium text-slate-500 mb-1">Status</div>
+              <div class="flex items-center gap-1.5">
+                <div
+                  class={`w-2 h-2 rounded-full ${getStatusConfig(project.status).dotColor}`}
+                >
+                </div>
+                <span
+                  class={`text-sm ${getStatusConfig(project.status).textColor}`}
+                >
+                  {getStatusConfig(project.status).label}
+                </span>
+              </div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-500 mb-1">Month</div>
+              <div class="text-sm text-slate-900">{project.month}</div>
+            </div>
+            <div>
+              <div class="text-sm font-medium text-slate-500 mb-1">Started</div>
+              <div class="text-sm text-slate-900">
+                {formatDate(project.created_at)}
+              </div>
+            </div>
+            {
+              project.completed_at && (
+                <div>
+                  <div class="text-sm font-medium text-slate-500 mb-1">
+                    Completed
+                  </div>
+                  <div class="text-sm text-slate-900">
+                    {formatDate(project.completed_at)}
+                  </div>
+                </div>
+              )
+            }
+          </div>
+
+          {/* Tech Stack */}
+          {
+            project.tech_stack && (
+              <div class="mt-6">
+                <h3 class="text-sm font-medium text-slate-900 mb-3">
+                  Tech Stack
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {project.tech_stack.map((tech: string) => (
+                    <span class="px-2.5 py-1.5 bg-slate-100 text-slate-600 rounded-md text-sm">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          }
+
+          {/* Project Links */}
+          {
+            (project.github_url || project.demo_url) && (
+              <div class="flex gap-4 mt-8">
+                {project.github_url && (
+                  <a
+                    href={project.github_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                    View Source Code
+                  </a>
+                )}
+                {project.demo_url && (
+                  <a
+                    href={project.demo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  >
+                    <svg
+                      class="w-5 h-5 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                    View Live Demo
+                  </a>
+                )}
+              </div>
+            )
+          }
+        </div>
+      </div>
+
+      {/* Project Updates */}
+      {
+        project.product_updates && project.product_updates.length > 0 && (
+          <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">
+              Project Updates
+            </h2>
+            <div class="space-y-6">
+              {project.product_updates.map((update: any) => (
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div
+                      class={`
+                    inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                    ${
+                      update.type === "milestone"
+                        ? "bg-purple-50 text-purple-700"
+                        : update.type === "progress"
+                          ? "bg-blue-50 text-blue-700"
+                          : update.type === "launch"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-700"
+                    }
+                  `}
+                    >
+                      <span class="mr-1.5">
+                        {update.type === "milestone"
+                          ? "🏆"
+                          : update.type === "progress"
+                            ? "📈"
+                            : update.type === "launch"
+                              ? "🚀"
+                              : "💡"}
+                      </span>
+                      {update.type.charAt(0).toUpperCase() +
+                        update.type.slice(1)}
+                    </div>
+                    <time class="text-sm text-slate-500">
+                      {formatDate(update.created_at)}
+                    </time>
+                  </div>
+                  <p class="text-slate-600 whitespace-pre-wrap">
+                    {update.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      {/* Lessons Learned - Only show for completed projects */}
+      {
+        project.status === "completed" && project.lessons_learned && (
+          <div class="max-w-4xl mx-auto mt-12">
+            <div class="bg-emerald-50 rounded-xl p-8 border border-emerald-100">
+              <h2 class="text-2xl font-bold text-emerald-900 mb-2">
+                Lessons Learned
+              </h2>
+              <p class="text-emerald-700 whitespace-pre-wrap">
+                {project.lessons_learned}
+              </p>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
