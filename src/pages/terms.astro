@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+
+const lastUpdated = "January 13, 2025";
+---
+
+<Layout title="Terms of Service - 12 in 12">
+  <Navbar />
+
+  <main class="min-h-screen bg-slate-50 pt-24 pb-16">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto">
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">Terms of Service</h1>
+        <p class="text-slate-600 mb-8">Last updated: {lastUpdated}</p>
+
+        <div class="prose prose-slate max-w-none">
+          <p class="lead">
+            Please read these Terms of Service carefully before using 12 in 12.
+            By accessing or using our service, you agree to be bound by these
+            terms.
+          </p>
+
+          <h2>1. Acceptance of Terms</h2>
+          <p>
+            By accessing or using 12 in 12, you agree to be bound by these Terms
+            of Service and all applicable laws and regulations. If you do not
+            agree with any of these terms, you are prohibited from using or
+            accessing this site.
+          </p>
+
+          <h2>2. Use License</h2>
+          <p>
+            Permission is granted to temporarily access the materials
+            (information or software) on 12 in 12 for personal, non-commercial
+            transitory viewing only.
+          </p>
+          <p>
+            This license shall automatically terminate if you violate any of
+            these restrictions and may be terminated by 12 in 12 at any time.
+          </p>
+
+          <h2>3. User Accounts</h2>
+          <p>
+            To access certain features of the service, you must create an
+            account. You agree to:
+          </p>
+          <ul>
+            <li>Provide accurate and complete information</li>
+            <li>Maintain the security of your account</li>
+            <li>Promptly update your account information</li>
+            <li>Accept responsibility for all activities under your account</li>
+          </ul>
+
+          <h2>4. User Content</h2>
+          <p>
+            When you create or make available any content through our service,
+            you represent and warrant that:
+          </p>
+          <ul>
+            <li>
+              You own or have the necessary rights to use and authorize the use
+              of the content
+            </li>
+            <li>
+              The content does not violate any party's intellectual property
+              rights
+            </li>
+            <li>The content complies with these terms and applicable law</li>
+          </ul>
+
+          <h2>5. Intellectual Property</h2>
+          <p>
+            The service and its original content, features, and functionality
+            are owned by 12 in 12 and are protected by international copyright,
+            trademark, patent, trade secret, and other intellectual property
+            laws.
+          </p>
+
+          <h2>6. Prohibited Uses</h2>
+          <p>You agree not to use the service:</p>
+          <ul>
+            <li>For any unlawful purpose</li>
+            <li>To harass, abuse, or harm others</li>
+            <li>To impersonate or attempt to impersonate others</li>
+            <li>To interfere with or disrupt the service</li>
+            <li>To collect or track personal information of others</li>
+          </ul>
+
+          <h2>7. Disclaimer</h2>
+          <p>
+            The materials on 12 in 12's website are provided on an 'as is'
+            basis. 12 in 12 makes no warranties, expressed or implied, and
+            hereby disclaims and negates all other warranties including, without
+            limitation, implied warranties or conditions of merchantability,
+            fitness for a particular purpose, or non-infringement of
+            intellectual property or other violation of rights.
+          </p>
+
+          <h2>8. Limitations</h2>
+          <p>
+            In no event shall 12 in 12 or its suppliers be liable for any
+            damages (including, without limitation, damages for loss of data or
+            profit, or due to business interruption) arising out of the use or
+            inability to use the materials on 12 in 12's website.
+          </p>
+
+          <h2>9. Links to Other Websites</h2>
+          <p>
+            Our service may contain links to third-party websites or services
+            that are not owned or controlled by 12 in 12. We have no control
+            over, and assume no responsibility for, the content, privacy
+            policies, or practices of any third-party websites or services.
+          </p>
+
+          <h2>10. Termination</h2>
+          <p>
+            We may terminate or suspend your account and bar access to the
+            service immediately, without prior notice or liability, under our
+            sole discretion, for any reason whatsoever, including without
+            limitation if you breach the Terms.
+          </p>
+
+          <h2>11. Governing Law</h2>
+          <p>
+            These Terms shall be governed by and construed in accordance with
+            the laws of the jurisdiction in which 12 in 12 operates, without
+            regard to its conflict of law provisions.
+          </p>
+
+          <h2>12. Changes to Terms</h2>
+          <p>
+            We reserve the right to modify or replace these Terms at any time.
+            If a revision is material, we will provide at least 30 days' notice
+            prior to any new terms taking effect.
+          </p>
+
+          <h2>Contact Us</h2>
+          <p>
+            If you have any questions about these Terms, please contact us at:
+          </p>
+          <ul>
+            <li>Email: terms@12in12.dev</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .prose h2 {
+    @apply text-2xl font-bold text-slate-900 mt-12 mb-6;
+  }
+  .prose h3 {
+    @apply text-xl font-semibold text-slate-900 mt-8 mb-4;
+  }
+  .prose p {
+    @apply text-slate-600 mb-4 leading-relaxed;
+  }
+  .prose ul {
+    @apply list-disc list-inside text-slate-600 mb-4 space-y-2;
+  }
+  .prose .lead {
+    @apply text-lg text-slate-700 mb-8;
+  }
+</style>

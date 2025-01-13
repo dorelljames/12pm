@@ -20,26 +20,26 @@ const footerLinks = [
   {
     title: "Legal",
     links: [
-      { text: "Privacy", href: "#" },
-      { text: "Terms", href: "#" },
-      { text: "Cookie Policy", href: "#" },
+      { text: "Privacy", href: "/privacy" },
+      { text: "Terms", href: "/terms" },
+      { text: "Cookie Policy", href: "/cookies" },
     ],
   },
 ];
 ---
 
 <footer class="bg-slate-900">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 animate-fade-in">
-    <div class="py-16 grid grid-cols-1 md:grid-cols-3 gap-8 stagger-animations">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
       {
         footerLinks.map((section, index) => (
-          <div class="animate-slide-up" style="--delay: {index * 0.1}s">
+          <div>
             <h3 class="text-sm font-semibold leading-6 text-white">
               {section.title}
             </h3>
-            <ul role="list" class="mt-6 space-y-4 stagger-animations">
+            <ul role="list" class="mt-6 space-y-4">
               {section.links.map((link) => (
-                <li class="animate-fade-in">
+                <li class="">
                   <a
                     href={link.href}
                     class="text-sm leading-6 text-slate-300 hover:text-white transition-colors hover-lift inline-block"

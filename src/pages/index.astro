@@ -8,6 +8,34 @@ import HowItWorks from "../components/HowItWorks.astro";
 import FAQ from "../components/FAQ.astro";
 import CTA from "../components/CTA.astro";
 import Footer from "../components/Footer.astro";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Get current month
+const currentMonth = new Date().toLocaleString("default", { month: "long" });
+
+// Fetch latest projects for current month
+const { data: latestProjects } = await supabase
+  .from("products")
+  .select(
+    `
+    *,
+    profiles:profile_id (
+      username,
+      full_name,
+      avatar_url
+    )
+  `
+  )
+  .eq("month", currentMonth)
+  .eq("status", "in_progress")
+  .order("created_at", { ascending: false })
+  .limit(6);
 ---
 
 <Layout>
@@ -16,6 +44,137 @@ import Footer from "../components/Footer.astro";
     <Hero />
     <Features />
     <Benefits />
+
+    {/* Latest Projects Section */}
+    <section class="py-24 bg-slate-50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center mb-16">
+          <h2 class="text-3xl font-bold text-slate-900 mb-4">
+            Building This Month
+          </h2>
+          <p class="text-lg text-slate-600">
+            Check out what our builders are working on in {currentMonth}
+          </p>
+        </div>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
+        >
+          {
+            latestProjects?.map((project) => (
+              <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-shadow border border-slate-200 overflow-hidden group">
+                {/* Project Thumbnail */}
+                <div class="relative h-48 bg-slate-100">
+                  {project.thumbnail_url ? (
+                    <img
+                      src={project.thumbnail_url}
+                      alt={project.title}
+                      class="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div class="flex items-center justify-center h-full">
+                      <span class="text-slate-400">🏗️ Building</span>
+                    </div>
+                  )}
+                  <div class="absolute top-4 right-4">
+                    <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
+                      In Progress
+                    </span>
+                  </div>
+                </div>
+
+                <div class="p-6">
+                  {/* Builder Info */}
+                  <div class="flex items-center gap-3 mb-4">
+                    {project.profiles.avatar_url ? (
+                      <img
+                        src={project.profiles.avatar_url}
+                        alt={project.profiles.username}
+                        class="w-10 h-10 rounded-full"
+                      />
+                    ) : (
+                      <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
+                        <span class="text-slate-500 text-sm">
+                          {project.profiles.username?.[0]?.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <h4 class="text-sm font-medium text-slate-900">
+                        {project.profiles.full_name ||
+                          project.profiles.username}
+                      </h4>
+                      <a
+                        href={`/${project.profiles.username}`}
+                        class="text-xs text-slate-500 hover:text-primary-600"
+                      >
+                        @{project.profiles.username}
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Project Info */}
+                  <a
+                    href={`/projects/${project.slug}`}
+                    class="text-xl font-semibold text-slate-900 mb-2 group-hover:text-primary-600 transition-colors block"
+                  >
+                    {project.title}
+                  </a>
+                  {project.description && (
+                    <p class="text-slate-600 text-sm mb-4 line-clamp-2">
+                      {project.description}
+                    </p>
+                  )}
+
+                  {/* Tech Stack */}
+                  {project.tech_stack && (
+                    <div class="flex flex-wrap gap-2">
+                      {project.tech_stack.map((tech: string) => (
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        {/* Show this when no projects */}
+        {
+          (!latestProjects || latestProjects.length === 0) && (
+            <div class="text-center py-12">
+              <div class="text-slate-400 mb-4">🌱</div>
+              <h3 class="text-lg font-medium text-slate-900 mb-2">
+                No Active Projects Yet
+              </h3>
+              <p class="text-slate-600">
+                Be the first to start building this month!
+              </p>
+            </div>
+          )
+        }
+
+        {/* View All Link */}
+        <div class="text-center mt-12">
+          <a
+            href="/projects"
+            class="inline-flex items-center gap-2 px-6 py-3 text-lg font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors shadow-sm hover:shadow-md"
+          >
+            View All Projects
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fill-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                clip-rule="evenodd"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <HowItWorks />
     <FAQ />
     <CTA />

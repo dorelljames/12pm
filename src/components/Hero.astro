@@ -23,15 +23,19 @@ import { Image } from "astro:assets";
       <h1
         class="mt-8 max-w-4xl text-center text-5xl font-bold tracking-tight text-white sm:text-7xl"
       >
-        Build <span class="text-gradient">12 Products</span> that matter in <span
-          class="text-gradient">12 Months</span
-        >
+        Build <span class="text-gradient animated-words">
+          <span class="word">Products</span>
+          <span class="word">Projects</span>
+          <span class="word">Startups</span>
+          <span class="word">Ideas</span>
+          <span class="word">Dreams</span>
+        </span>
+        <br /> in <span class="text-gradient">12 Months</span>
       </h1>
 
       <p class="mt-6 max-w-2xl text-center text-lg text-slate-300">
         Join a community of builders shipping real products every month. Turn
-        your ideas into reality, learn by doing, and build your entrepreneurial
-        portfolio.
+        your ideas into reality, learn by doing, and build your portfolio.
       </p>
 
       <div class="mt-10 flex gap-4">
@@ -39,7 +43,7 @@ import { Image } from "astro:assets";
           href="/signup"
           class="group relative rounded-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-accent-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2"
         >
-          Join the Challenge
+          Join & Build Today
           <span
             class="absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition-opacity group-hover:opacity-100"
           >
@@ -82,3 +86,74 @@ import { Image } from "astro:assets";
     </div>
   </div>
 </section>
+
+<style>
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+  }
+
+  .animated-words {
+    display: inline-flex;
+    position: relative;
+    min-width: 200px; /* Mobile width */
+    height: 1.2em;
+    vertical-align: top;
+    text-align: left;
+  }
+  @media (min-width: 642px) {
+    .animated-words {
+      min-width: 300px; /* Desktop width */
+    }
+  }
+
+  .word {
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    animation: rotateWord 10s linear infinite;
+    background: linear-gradient(
+      to right,
+      var(--tw-gradient-from),
+      var(--tw-gradient-to)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .word:nth-child(2) {
+    animation-delay: 2s;
+  }
+  .word:nth-child(3) {
+    animation-delay: 4s;
+  }
+  .word:nth-child(4) {
+    animation-delay: 6s;
+  }
+  .word:nth-child(5) {
+    animation-delay: 8s;
+  }
+
+  @keyframes rotateWord {
+    0%,
+    5% {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    10%,
+    25% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    30%,
+    100% {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+  }
+
+  /* Make first word visible initially */
+  .word:first-child {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>

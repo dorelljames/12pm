@@ -59,7 +59,7 @@ if (Astro.request.method === "POST") {
 
     if (!reason) {
       formState.errors.reason =
-        "Please share what excites you about the challenge";
+        "Please share what excites you about the program";
     } else if (reason.length < 10) {
       formState.errors.reason =
         "Please provide a bit more detail (at least 10 characters)";
@@ -97,7 +97,7 @@ if (Astro.request.method === "POST") {
 }
 ---
 
-<Layout title="Join the Challenge - 12 in 12">
+<Layout title="Join & Build - 12 in 12">
   <Navbar />
 
   <main class="bg-slate-900 pt-24 pb-16">
@@ -111,8 +111,7 @@ if (Astro.request.method === "POST") {
 
       <div class="relative mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16 animate-fade-in">
-          <span class="text-primary-400 font-medium">Join the Challenge 💪</span
-          >
+          <span class="text-primary-400 font-medium">Join & Build 💪</span>
           <h1
             class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl"
           >
@@ -212,7 +211,7 @@ if (Astro.request.method === "POST") {
                 for="reason"
                 class="block text-sm font-medium text-slate-300"
               >
-                What excites you most about this challenge?
+                What excites you most about this program?
               </label>
               <div class="mt-2">
                 <textarea
