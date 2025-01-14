@@ -27,7 +27,12 @@ const { data: project } = await supabase
     ),
     product_updates (
       *
-    )
+    ),
+    order: {
+      product_updates: {
+        created_at: 'desc'
+      }
+    }
   `
   )
   .eq("slug", slug)
