@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 import ShareUpdateModal from "../components/ShareUpdateModal.astro";
+import ProjectModal from "../components/ProjectModal.astro";
 
 // Get username from URL params
 const { username } = Astro.params;
@@ -23,7 +24,6 @@ if (accessToken && refreshToken) {
   });
   user = sessionUser;
 }
-console.log("🚀 ~ user:", user);
 
 // Fetch user profile
 const { data: profile, error: profileError } = await supabase
@@ -198,6 +198,7 @@ let editingUpdate: Update | undefined;
       <ShareUpdateModal profileId={profile.id} products={products || []} />
     )
   }
+  {isOwned && <ProjectModal profileId={profile.id} month="" />}
   <main class="min-h-screen bg-gray-50">
     {/* Hero Section */}
     <div class="bg-white border-b border-gray-100">
@@ -227,7 +228,7 @@ let editingUpdate: Update | undefined;
                           viewBox="0 0 24 24"
                           fill="currentColor"
                         >
-                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm1 16.057v-3.05c2.837.183 4.704 1.179 5.904 2.317-1.297 1.291-3.569 2.14-5.904 2.14-3.47 0-6.545-1.666-8.096-4.195 1.2-1.138 3.067-2.134 5.904-2.317v3.05A9.09 9.09 0 0112 16.92a9.09 9.09 0 01-1-6.863A9.09 9.09 0 0112 3.196a9.09 9.09 0 011 6.863A9.09 9.09 0 0112 16.92z" />
+                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm1 16.057v-3.05c2.837.183 4.704 1.179 5.904 2.317-1.297 1.291-3.569 2.14-5.904 2.317v3.05A9.09 9.09 0 0112 16.92a9.09 9.09 0 01-1-6.863A9.09 9.09 0 0112 3.196a9.09 9.09 0 011 6.863A9.09 9.09 0 0112 16.92z" />
                         </svg>
                       ),
                       github: (
@@ -336,19 +337,25 @@ let editingUpdate: Update | undefined;
                   const product = productGrid[index];
                   const isCurrent = month === currentMonth;
                   return (
-                    <div
+                    <button
+                      type="button"
                       class={`
-                      h-2 rounded-full transition-all duration-300
-                      ${
-                        product.status === "completed"
-                          ? "bg-emerald-500"
-                          : product.status === "in_progress"
-                            ? "bg-amber-500"
-                            : "bg-gray-200"
-                      }
-                      ${isCurrent ? "ring-2 ring-offset-2 ring-emerald-500" : ""}
-                    `}
+                        relative h-2 rounded-full transition-all duration-300 cursor-pointer
+                        ${
+                          product.status === "completed"
+                            ? "bg-emerald-500"
+                            : product.status === "in_progress"
+                              ? "bg-amber-500"
+                              : "bg-gray-200"
+                        }
+                        ${isCurrent ? "ring-2 ring-offset-2 ring-emerald-500" : ""}
+                        ${isOwned ? "hover:opacity-80" : "cursor-default"}
+                      `}
                       title={`${month}: ${product.status || "Not Started"}`}
+                      data-project={JSON.stringify({
+                        ...product,
+                        month,
+                      })}
                     />
                   );
                 })
@@ -486,7 +493,7 @@ let editingUpdate: Update | undefined;
       </div>
     </div>
 
-    {/* Products Grid - Move below updates */}
+    {/* Products Grid */}
     <div class="bg-white py-12 border-t border-gray-100">
       <div class="container mx-auto px-4">
         <h2 class="text-2xl font-bold text-gray-900 mb-8">Products Timeline</h2>
@@ -501,45 +508,88 @@ let editingUpdate: Update | undefined;
               return (
                 <div
                   class={`
-                  group bg-white rounded-xl overflow-hidden transition-all duration-300
-                  ${isActive ? "hover:shadow-xl" : "opacity-75"}
-                  ${isCurrentMonth ? "ring-2 ring-emerald-500" : ""}
-                  border border-gray-100
-                `}
+                    group bg-white rounded-xl overflow-hidden transition-all duration-300
+                    ${isActive ? "hover:shadow-xl" : "opacity-75"}
+                    ${isCurrentMonth ? "ring-2 ring-emerald-500" : ""}
+                    border border-gray-100
+                    ${isOwned ? "cursor-pointer" : ""}
+                  `}
+                  data-project={
+                    isOwned
+                      ? JSON.stringify({
+                          ...product,
+                          month: product.month,
+                        })
+                      : undefined
+                  }
                 >
                   {/* Thumbnail or Placeholder */}
-                  <div class="relative h-48 bg-gray-100">
+                  <div class="relative aspect-video bg-gray-100">
                     {product.thumbnail_url ? (
                       <img
                         src={product.thumbnail_url}
                         alt={product.title}
                         class="w-full h-full object-cover"
+                        loading="lazy"
+                        onerror="this.onerror=null; this.src='https://placehold.co/600x400/e5e7eb/94a3b8?text=No+Image'"
                       />
                     ) : (
-                      <div class="flex items-center justify-center h-full">
-                        <span class="text-gray-400">
-                          {status === "not_started"
-                            ? "🚀 Coming Soon"
-                            : "🏗️ Building"}
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-gray-400 flex flex-col items-center gap-2">
+                          {status === "not_started" ? (
+                            <>
+                              <span class="text-2xl">🚀</span>
+                              <span class="text-sm">Coming Soon</span>
+                            </>
+                          ) : (
+                            <>
+                              <span class="text-2xl">🏗️</span>
+                              <span class="text-sm">Building</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     )}
                     <div class="absolute top-4 right-4 flex gap-2">
                       <span
                         class={`
-                        px-2.5 py-1 rounded-full text-xs font-medium
-                        ${
-                          isCurrentMonth
-                            ? "bg-emerald-100 text-emerald-700"
-                            : isActive
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "bg-gray-50 text-gray-500"
-                        }
-                      `}
+                          px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-md
+                          ${
+                            isCurrentMonth
+                              ? "bg-emerald-100/90 text-emerald-700"
+                              : isActive
+                                ? "bg-emerald-50/90 text-emerald-600"
+                                : "bg-gray-50/90 text-gray-500"
+                          }
+                        `}
                       >
                         {product.month}
-                        {isCurrentMonth && <span class="ml-1">• Now</span>}
                       </span>
+                      {isOwned && (
+                        <button
+                          type="button"
+                          class="p-1 bg-white/90 backdrop-blur-md rounded-full text-gray-400 hover:text-gray-600 shadow-sm hover:shadow transition-all"
+                          title="Edit Project"
+                          data-project={JSON.stringify({
+                            ...product,
+                            month: product.month,
+                          })}
+                        >
+                          <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -559,20 +609,20 @@ let editingUpdate: Update | undefined;
                     {/* Title and Description */}
                     <h3
                       class={`
-                      text-xl font-semibold mb-2 transition-colors
-                      ${isActive ? "text-gray-900" : "text-gray-400"}
-                    `}
+                        text-xl font-semibold mb-2 transition-colors line-clamp-2
+                        ${isActive ? "text-gray-900" : "text-gray-400"}
+                      `}
                     >
                       {product.title}
                     </h3>
                     {product.description && (
-                      <p class="text-gray-600 text-sm mb-4">
+                      <p class="text-gray-600 text-sm mb-4 line-clamp-3">
                         {product.description}
                       </p>
                     )}
 
                     {/* Tech Stack Tags */}
-                    {product.tech_stack && (
+                    {product.tech_stack && product.tech_stack.length > 0 && (
                       <div class="flex flex-wrap gap-2 mb-4">
                         {product.tech_stack.map((tech) => (
                           <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
@@ -587,7 +637,7 @@ let editingUpdate: Update | undefined;
                       {status === "completed" && (
                         <>
                           <a
-                            href={`/products/${product.id}`}
+                            href={`/projects/${product.id}`}
                             class="inline-flex items-center text-sm font-medium text-emerald-600 hover:text-emerald-700"
                           >
                             View Details
@@ -683,7 +733,7 @@ let editingUpdate: Update | undefined;
                         <h4 class="text-sm font-medium text-gray-900 mb-2">
                           Lessons Learned
                         </h4>
-                        <p class="text-sm text-gray-600 italic">
+                        <p class="text-sm text-gray-600 italic line-clamp-3">
                           "{product.lessons_learned}"
                         </p>
                       </div>
@@ -711,5 +761,26 @@ let editingUpdate: Update | undefined;
         modal.classList.remove("hidden");
       });
     }
+
+    // Add click handlers for project buttons in timeline
+    document.querySelectorAll("button[data-project]").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent triggering parent card click
+        const target = e.currentTarget as HTMLButtonElement;
+        const projectData = JSON.parse(target.dataset.project || "{}");
+        // @ts-ignore
+        window.showProjectModal?.(projectData);
+      });
+    });
+
+    // Add click handlers for project cards
+    document.querySelectorAll("div[data-project]").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLDivElement;
+        const projectData = JSON.parse(target.dataset.project || "{}");
+        // @ts-ignore
+        window.showProjectModal?.(projectData);
+      });
+    });
   });
 </script>
