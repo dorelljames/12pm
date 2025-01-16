@@ -1,5 +1,5 @@
 {
-  "name": "12pm",
+  "name": "12in12",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -14,7 +14,6 @@
     "@notionhq/client": "^2.2.15",
     "@supabase/supabase-js": "^2.47.12",
     "astro": "^5.1.2",
-    "micromatch": "^4.0.8",
     "tailwindcss": "^3.4.17"
   }
 }

@@ -1,14 +1,31 @@
 import { defineMiddleware } from "astro:middleware";
 import { supabase } from "../lib/supabase";
-import micromatch from "micromatch";
 
 const protectedRoutes = ["/dashboard(|/)"];
 const redirectRoutes = ["/signin(|/)", "/register(|/)"];
-const proptectedAPIRoutes = ["/api/guestbook(|/)"];
+const protectedAPIRoutes = ["/api/guestbook(|/)"];
+
+function isMatch(path: string, patterns: string[]): boolean {
+  // Convert glob patterns to regular expressions
+  const regexPatterns = patterns.map((pattern) => {
+    // Escape special regex characters except * and ?
+    const escaped = pattern
+      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      // Convert glob * to regex .*
+      .replace(/\*/g, ".*")
+      // Convert glob ? to regex .
+      .replace(/\?/g, ".");
+    // Wrap in ^ and $ to match full string
+    return new RegExp(`^${escaped}$`);
+  });
+
+  // Test path against all patterns
+  return regexPatterns.some((regex) => regex.test(path));
+}
 
 export const onRequest = defineMiddleware(
   async ({ locals, url, cookies, redirect }, next) => {
-    if (micromatch.isMatch(url.pathname, protectedRoutes)) {
+    if (isMatch(url.pathname, protectedRoutes)) {
       const accessToken = cookies.get("sb-access-token");
       const refreshToken = cookies.get("sb-refresh-token");
 
@@ -44,7 +61,7 @@ export const onRequest = defineMiddleware(
       });
     }
 
-    if (micromatch.isMatch(url.pathname, redirectRoutes)) {
+    if (isMatch(url.pathname, redirectRoutes)) {
       const accessToken = cookies.get("sb-access-token");
       const refreshToken = cookies.get("sb-refresh-token");
 
@@ -53,7 +70,7 @@ export const onRequest = defineMiddleware(
       }
     }
 
-    if (micromatch.isMatch(url.pathname, proptectedAPIRoutes)) {
+    if (isMatch(url.pathname, protectedAPIRoutes)) {
       const accessToken = cookies.get("sb-access-token");
       const refreshToken = cookies.get("sb-refresh-token");
 
@@ -63,7 +80,7 @@ export const onRequest = defineMiddleware(
           JSON.stringify({
             error: "Unauthorized",
           }),
-          { status: 401 },
+          { status: 401 }
         );
       }
 
@@ -78,11 +95,11 @@ export const onRequest = defineMiddleware(
           JSON.stringify({
             error: "Unauthorized",
           }),
-          { status: 401 },
+          { status: 401 }
         );
       }
     }
 
     return next();
-  },
+  }
 );
