@@ -17,11 +17,13 @@ type FormState = {
     name?: string;
     email?: string;
     reason?: string;
+    username?: string;
   };
   values?: {
     name: string;
     email: string;
     reason: string;
+    username: string;
   };
 };
 
@@ -34,12 +36,14 @@ if (Astro.request.method === "POST") {
     const name = data.get("name")?.toString().trim();
     const email = data.get("email")?.toString().trim();
     const reason = data.get("reason")?.toString().trim();
+    const username = data.get("username")?.toString().trim();
 
     // Store form values
     formState.values = {
       name: name ?? "",
       email: email ?? "",
       reason: reason ?? "",
+      username: username ?? "",
     };
 
     // Validate fields
@@ -81,6 +85,9 @@ if (Astro.request.method === "POST") {
           },
           Reason: {
             rich_text: [{ text: { content: reason } }],
+          },
+          Username: {
+            rich_text: [{ text: { content: username } }],
           },
         },
       });
@@ -170,6 +177,45 @@ if (Astro.request.method === "POST") {
                   formState.errors?.name && (
                     <p class="mt-1 text-sm text-red-400">
                       {formState.errors.name}
+                    </p>
+                  )
+                }
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="username"
+                class="block text-sm font-medium text-slate-300"
+              >
+                What would your personal URL here be like?
+              </label>
+              <div class="mt-2">
+                <div class="relative flex rounded-md shadow-sm">
+                  <span
+                    class="inline-flex items-center px-3 rounded-l-md border-r border-slate-600 bg-slate-700 text-slate-400 text-sm"
+                  >
+                    https://12in12.pro/
+                  </span>
+                  <input
+                    type="text"
+                    name="username"
+                    id="username"
+                    required
+                    value={formState.values?.username}
+                    class:list={[
+                      "block w-full rounded-none rounded-r-md border-0 bg-slate-700/50 py-2 px-3 text-white shadow-sm ring-1 ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-primary-500",
+                      formState.errors?.username
+                        ? "ring-red-500"
+                        : "ring-slate-600",
+                    ]}
+                    placeholder="username"
+                  />
+                </div>
+                {
+                  formState.errors?.username && (
+                    <p class="mt-1 text-sm text-red-400">
+                      {formState.errors.username}
                     </p>
                   )
                 }
