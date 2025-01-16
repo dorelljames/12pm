@@ -13,8 +13,8 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       provider: provider as Provider,
       options: {
         redirectTo: import.meta.env.DEV
-          ? "http://localhost:4321/api/auth/callback"
-          : "https://astro-supabase-auth.vercel.app/api/auth/callback",
+          ? "http://localhost:1234/api/auth/callback"
+          : "https://12in12.pro/api/auth/callback",
       },
     });
 
