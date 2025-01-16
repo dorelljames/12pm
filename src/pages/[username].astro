@@ -17,6 +17,7 @@ const supabase = createClient(
 const {
   data: { user },
 } = await supabase.auth.getUser();
+console.log("🚀 ~ user:", user);
 
 // Fetch user profile
 const { data: profile, error: profileError } = await supabase
@@ -133,6 +134,10 @@ interface Update {
   type: "milestone" | "progress" | "launch" | "learning";
   created_at: string;
   product_id?: string;
+  products?: {
+    title: string;
+    month: string;
+  };
 }
 
 // Add new query for updates
@@ -150,7 +155,24 @@ const { data: updates, error: updatesError } = await supabase
   .eq("profile_id", profile?.id)
   .order("created_at", { ascending: false })
   .limit(10);
-console.log("🚀 ~ updates:", updates);
+
+// Add new types
+interface SocialLink {
+  id: string;
+  user_id: string;
+  platform: "website" | "github" | "twitter" | "custom";
+  url: string;
+  title?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Add new query for social links
+const { data: socialLinks, error: socialLinksError } = await supabase
+  .from("social_links")
+  .select("*")
+  .eq("user_id", profile?.id)
+  .order("platform");
 ---
 
 <Layout title={`${username}'s Builder Journey`}>
@@ -166,13 +188,72 @@ console.log("🚀 ~ updates:", updates);
                 {profile?.full_name || username}'s Builder Journey
               </h1>
               <p class="text-lg text-gray-600 mb-6">
-                Building in public • One product every month
+                {profile?.bio || "Building in public • One product every month"}
               </p>
-              {
-                profile?.bio && (
-                  <p class="text-gray-600 max-w-2xl">{profile.bio}</p>
-                )
-              }
+
+              {/* Social Links */}
+              <div class="flex items-center gap-4 text-gray-500">
+                {
+                  socialLinks?.map((link: SocialLink) => {
+                    type IconsType = {
+                      [K in SocialLink["platform"]]: astroHTML.JSX.Element;
+                    };
+
+                    const icons: IconsType = {
+                      website: (
+                        <svg
+                          class="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm1 16.057v-3.05c2.837.183 4.704 1.179 5.904 2.317-1.297 1.291-3.569 2.14-5.904 2.14-3.47 0-6.545-1.666-8.096-4.195 1.2-1.138 3.067-2.134 5.904-2.317v3.05A9.09 9.09 0 0112 16.92a9.09 9.09 0 01-1-6.863A9.09 9.09 0 0112 3.196a9.09 9.09 0 011 6.863A9.09 9.09 0 0112 16.92z" />
+                        </svg>
+                      ),
+                      github: (
+                        <svg
+                          class="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                        </svg>
+                      ),
+                      twitter: (
+                        <svg
+                          class="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      ),
+                      custom: (
+                        <svg
+                          class="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      ),
+                    };
+
+                    return (
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="hover:text-gray-900 transition-colors"
+                        title={link.title || link.platform}
+                      >
+                        {icons[link.platform]}
+                      </a>
+                    );
+                  })
+                }
+              </div>
             </div>
             {
               profile?.avatar_url && (
@@ -261,14 +342,13 @@ console.log("🚀 ~ updates:", updates);
     <div class="container mx-auto px-4 py-12">
       <div class="max-w-4xl mx-auto">
         {/* Header with Action */}
-        <div class="flex justify-between items-center mb-12">
+        <div class="flex justify-between items-center mb-8">
           <div>
-            <h2 class="text-3xl font-bold text-gray-900 mb-2">Builder's Log</h2>
-            <p class="text-gray-600">Follow my journey as I build in public</p>
+            <h2 class="text-2xl font-bold text-gray-900">Latest Updates</h2>
           </div>
           {
-            user && profile?.id === 1 && (
-              <button class="inline-flex items-center px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
+            user && (
+              <button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm">
                 <svg
                   class="w-4 h-4 mr-2"
                   fill="none"
@@ -288,204 +368,69 @@ console.log("🚀 ~ updates:", updates);
           }
         </div>
 
-        {/* Updates Timeline */}
-        <div class="relative">
-          {/* Timeline Line */}
-          <div class="absolute left-8 top-0 bottom-0 w-px bg-gray-200"></div>
-
-          {/* Updates */}
-          <div class="space-y-12">
-            {
-              updates?.map((update) => (
-                <div class="relative">
-                  {/* Timeline Dot */}
-                  <div
-                    class={`
-                    absolute left-8 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-white
+        {/* Updates List */}
+        <div class="space-y-4">
+          {
+            updates?.map((update: Update) => (
+              <div class="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-sm transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                     ${
                       update.type === "milestone"
-                        ? "bg-purple-500"
+                        ? "bg-purple-50 text-purple-700"
                         : update.type === "progress"
-                          ? "bg-blue-500"
+                          ? "bg-blue-50 text-blue-700"
                           : update.type === "launch"
-                            ? "bg-emerald-500"
-                            : "bg-amber-500"
-                    }
-                  `}
-                  />
-
-                  {/* Update Card */}
-                  <div class="ml-16 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                    {/* Card Header */}
-                    <div class="p-6 border-b border-gray-100">
-                      <div class="flex items-center justify-between mb-4">
-                        {/* Type Badge */}
-                        <div
-                          class={`
-                          inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                          ${
-                            update.type === "milestone"
-                              ? "bg-purple-50 text-purple-700"
-                              : update.type === "progress"
-                                ? "bg-blue-50 text-blue-700"
-                                : update.type === "launch"
-                                  ? "bg-emerald-50 text-emerald-700"
-                                  : "bg-amber-50 text-amber-700"
-                          }
-                        `}
-                        >
-                          <span class="mr-1.5">
-                            {update.type === "milestone"
-                              ? "🏆"
-                              : update.type === "progress"
-                                ? "📈"
-                                : update.type === "launch"
-                                  ? "🚀"
-                                  : "💡"}
-                          </span>
-                          {update.type.charAt(0).toUpperCase() +
-                            update.type.slice(1)}
-                        </div>
-
-                        {/* Date */}
-                        <time class="text-sm text-gray-500">
-                          {new Date(update.created_at).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            }
-                          )}
-                        </time>
-                      </div>
-
-                      {/* Product Context - if exists */}
-                      {update.product_id && (
-                        <div class="flex items-center gap-2 text-sm text-gray-600">
-                          <span class="font-medium text-gray-900">
-                            {update.products.title}
-                          </span>
-                          <span>•</span>
-                          <span>{update.products.month}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Content */}
-                    <div class="p-6">
-                      <div class="prose prose-sm max-w-none">
-                        <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {update.content}
-                        </p>
-                      </div>
-
-                      {/* Actions */}
-                      <div class="mt-4 flex items-center justify-between">
-                        {/* Engagement Stats */}
-                        <div class="flex items-center gap-4 text-sm text-gray-500">
-                          <button class="hover:text-gray-700 transition-colors inline-flex items-center gap-1">
-                            <svg
-                              class="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                              />
-                            </svg>
-                            {Math.floor(Math.random() * 10)} Likes
-                          </button>
-                          <button class="hover:text-gray-700 transition-colors inline-flex items-center gap-1">
-                            <svg
-                              class="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                              />
-                            </svg>
-                            Comment
-                          </button>
-                        </div>
-
-                        {/* Owner Actions */}
-                        {user && profile?.id === 1 && (
-                          <div class="flex items-center gap-2">
-                            <button class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                              <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
-                              </svg>
-                            </button>
-                            <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                              <svg
-                                class="w-4 h-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-700"
+                    }`}
+                    >
+                      {update.type === "milestone"
+                        ? "🏆"
+                        : update.type === "progress"
+                          ? "📈"
+                          : update.type === "launch"
+                            ? "🚀"
+                            : "💡"}{" "}
+                      {update.type.charAt(0).toUpperCase() +
+                        update.type.slice(1)}
+                    </span>
+                    {update.product_id && (
+                      <>
+                        <span class="text-gray-300">•</span>
+                        <span class="text-sm text-gray-600">
+                          {update.products?.title}
+                        </span>
+                      </>
+                    )}
                   </div>
+                  <time class="text-sm text-gray-500">
+                    {new Date(update.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </time>
                 </div>
-              ))
-            }
-          </div>
-
-          {/* Load More */}
-          {
-            updates?.length >= 10 && (
-              <div class="text-center mt-12">
-                <button class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                  Load More Updates
-                  <svg
-                    class="w-4 h-4 ml-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
+                <p class="text-gray-700 text-sm whitespace-pre-wrap">
+                  {update.content}
+                </p>
               </div>
-            )
+            ))
           }
         </div>
+
+        {/* Load More */}
+        {
+          (updates?.length ?? 0) >= 10 && (
+            <div class="text-center mt-8">
+              <button class="text-sm text-gray-500 hover:text-gray-700">
+                Load More Updates
+              </button>
+            </div>
+          )
+        }
       </div>
     </div>
 
