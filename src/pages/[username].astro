@@ -1,22 +1,28 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
+import ShareUpdateModal from "../components/ShareUpdateModal.astro";
 
 // Get username from URL params
 const { username } = Astro.params;
 
-// Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
+// Get cookies
+const accessToken = Astro.cookies.get("sb-access-token")?.value;
+const refreshToken = Astro.cookies.get("sb-refresh-token")?.value;
 
-// Get current logged in user
-const {
-  data: { user },
-} = await supabase.auth.getUser();
+// Set session if we have tokens
+let user = null;
+if (accessToken && refreshToken) {
+  const {
+    data: { user: sessionUser },
+  } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  user = sessionUser;
+}
 console.log("🚀 ~ user:", user);
 
 // Fetch user profile
@@ -25,6 +31,13 @@ const { data: profile, error: profileError } = await supabase
   .select("*")
   .eq("username", username)
   .single();
+
+// Redirect to signin if profile doesn't exist
+if (!profile) {
+  return Astro.redirect("/signin");
+}
+
+const isOwned = user && user.id === profile.user_id;
 
 // Fetch products
 const { data: products, error: productsError } = await supabase
@@ -173,10 +186,18 @@ const { data: socialLinks, error: socialLinksError } = await supabase
   .select("*")
   .eq("user_id", profile?.id)
   .order("platform");
+
+// Add this before the Layout component
+let editingUpdate: Update | undefined;
 ---
 
 <Layout title={`${username}'s Builder Journey`}>
   <Navbar />
+  {
+    isOwned && (
+      <ShareUpdateModal profileId={profile.id} products={products || []} />
+    )
+  }
   <main class="min-h-screen bg-gray-50">
     {/* Hero Section */}
     <div class="bg-white border-b border-gray-100">
@@ -347,8 +368,11 @@ const { data: socialLinks, error: socialLinksError } = await supabase
             <h2 class="text-2xl font-bold text-gray-900">Latest Updates</h2>
           </div>
           {
-            user && (
-              <button class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm">
+            isOwned && (
+              <button
+                id="shareUpdateButton"
+                class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+              >
                 <svg
                   class="w-4 h-4 mr-2"
                   fill="none"
@@ -406,12 +430,40 @@ const { data: socialLinks, error: socialLinksError } = await supabase
                       </>
                     )}
                   </div>
-                  <time class="text-sm text-gray-500">
-                    {new Date(update.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </time>
+                  <div class="flex items-center gap-3">
+                    <time class="text-sm text-gray-500">
+                      {new Date(update.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </time>
+                    {isOwned && (
+                      <button
+                        type="button"
+                        class="text-gray-400 hover:text-gray-600"
+                        onclick={`window.showEditModal(${JSON.stringify({
+                          id: update.id,
+                          type: update.type,
+                          content: update.content,
+                          product_id: update.product_id,
+                        })})`}
+                      >
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p class="text-gray-700 text-sm whitespace-pre-wrap">
                   {update.content}
@@ -647,3 +699,17 @@ const { data: socialLinks, error: socialLinksError } = await supabase
   </main>
   <Footer />
 </Layout>
+
+<script>
+  // Initialize modal functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const shareButton = document.getElementById("shareUpdateButton");
+    const modal = document.getElementById("shareUpdateModal");
+
+    if (shareButton && modal) {
+      shareButton.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+      });
+    }
+  });
+</script>
