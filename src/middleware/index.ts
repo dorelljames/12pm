@@ -1,9 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
 import { supabase } from "../lib/supabase";
 
-const protectedRoutes = ["/dashboard(|/)"];
-const redirectRoutes = ["/signin(|/)", "/register(|/)"];
-const protectedAPIRoutes = ["/api/guestbook(|/)"];
+const protectedRoutes = ["/dashboard"];
+const redirectRoutes = ["/signin", "/register"];
+const protectedAPIRoutes = ["/api/guestbook"];
 
 function isMatch(path: string, patterns: string[]): boolean {
   // Convert glob patterns to regular expressions
@@ -26,6 +26,8 @@ function isMatch(path: string, patterns: string[]): boolean {
 export const onRequest = defineMiddleware(
   async ({ locals, url, cookies, redirect }, next) => {
     if (isMatch(url.pathname, protectedRoutes)) {
+      console.log("ehree");
+
       const accessToken = cookies.get("sb-access-token");
       const refreshToken = cookies.get("sb-refresh-token");
 
@@ -66,7 +68,19 @@ export const onRequest = defineMiddleware(
       const refreshToken = cookies.get("sb-refresh-token");
 
       if (accessToken && refreshToken) {
-        return redirect("/dashboard");
+        // Verify the session is valid before redirecting
+        const { data, error } = await supabase.auth.setSession({
+          refresh_token: refreshToken.value,
+          access_token: accessToken.value,
+        });
+
+        if (!error && data.session) {
+          return redirect("/dashboard");
+        }
+
+        // If session is invalid, clear the cookies
+        cookies.delete("sb-access-token", { path: "/" });
+        cookies.delete("sb-refresh-token", { path: "/" });
       }
     }
 

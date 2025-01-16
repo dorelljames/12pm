@@ -10,4 +10,10 @@ export default defineConfig({
   output: "server",
   integrations: [tailwind()],
   adapter: cloudflare(),
+  redirects: {
+    "/login": "/signin",
+    "/register": "/signin",
+    "/forgot-password": "/signin",
+    "/forgot": "/signin",
+  },
 });

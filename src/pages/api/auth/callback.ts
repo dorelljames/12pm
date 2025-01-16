@@ -3,28 +3,42 @@ import { supabase } from "../../../lib/supabase";
 
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const authCode = url.searchParams.get("code");
+  const accessToken = url.searchParams.get("access_token");
+  const refreshToken = url.searchParams.get("refresh_token");
 
-  if (!authCode) {
-    return new Response("No code provided", { status: 400 });
+  if (!authCode && (!accessToken || !refreshToken)) {
+    return new Response("No authentication credentials provided", {
+      status: 400,
+    });
   }
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+  let session;
 
-  if (error) {
-    return new Response(error.message, { status: 500 });
+  if (authCode) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(
+      authCode as string
+    );
+    if (error) {
+      return new Response(error.message, { status: 500 });
+    }
+    session = data.session;
+  } else {
+    session = {
+      access_token: accessToken as string,
+      refresh_token: refreshToken as string,
+    };
   }
 
-  const { access_token, refresh_token } = data.session;
-
-  cookies.set("sb-access-token", access_token, {
+  cookies.set("sb-access-token", session.access_token, {
     path: "/",
     secure: true,
     httpOnly: true,
   });
-  cookies.set("sb-refresh-token", refresh_token, {
+  cookies.set("sb-refresh-token", session.refresh_token, {
     path: "/",
     secure: true,
     httpOnly: true,
   });
-  return redirect("/dashboard");
+
+  return redirect("/");
 };

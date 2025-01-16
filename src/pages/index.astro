@@ -181,3 +181,13 @@ const { data: latestProjects } = await supabase
   </main>
   <Footer />
 </Layout>
+
+<script>
+  // Handle code parameter from magic link
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get("code");
+
+  if (code) {
+    window.location.href = `/api/auth/callback?code=${encodeURIComponent(code)}`;
+  }
+</script>
